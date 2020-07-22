@@ -541,9 +541,13 @@ void push_mulop::operator()(s3select *self, const char *a, const char *b) const
   {
     self->getAction()->muldivQ.push_back(mulldiv_operation::muldiv_t::DIV);
   }
-  else
+  else if(token.compare("^") == 0)
   {
     self->getAction()->muldivQ.push_back(mulldiv_operation::muldiv_t::POW);
+  }
+  else
+  {
+    self->getAction()->muldivQ.push_back(mulldiv_operation::muldiv_t::MOD);
   }
 }
 

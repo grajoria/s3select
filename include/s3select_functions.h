@@ -1034,23 +1034,24 @@ base_function* s3select_functions::create(std::string fn_name)
     break;
 
   case s3select_func_En_t::AVG:
-    return S3SELECT_NEW(_fn_avg);
+    return S3SELECT_NEW(this,_fn_avg);
+    break;
 
   case s3select_func_En_t::LOWER:
-    return S3SELECT_NEW(_fn_lower);
+    return S3SELECT_NEW(this,_fn_lower);
     break;
+
+  case s3select_func_En_t::UPPER:
+    return S3SELECT_NEW(this,_fn_upper);
+    break;
+
+  case s3select_func_En_t::LENGTH:
+    return S3SELECT_NEW(this,_fn_charlength);
+    break; 
 
   case s3select_func_En_t::VERSION:
     return S3SELECT_NEW(this,_fn_version);
     break;
-
-  case s3select_func_En_t::UPPER:
-    return S3SELECT_NEW(_fn_upper);
-    break;
-
-  case s3select_func_En_t::LENGTH:
-    return S3SELECT_NEW(_fn_charlength);
-    break; 
 
   default:
     throw base_s3select_exception("internal error while resolving function-name");
