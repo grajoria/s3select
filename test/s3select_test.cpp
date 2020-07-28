@@ -169,17 +169,122 @@ TEST(TestS3SElect, ParseQuery)
   ASSERT_EQ(0, 0);
 }
 
+std::string random_arth_op()
+{
+    std::string op;
+    switch(std::rand() % 5)
+    {
+        case 0:
+            op = "+";
+            break;
+        case 1:
+            op = "-";
+            break;
+        case 2:
+            op = "*";
+            break;
+        case 3:
+            op = "/";
+            break;
+        case 4:
+            op = "^";
+            break;
+    }
+    return op;
+}
+
+std::string random_compare_op()
+{
+  std::string op;
+  switch(std::rand() % 6)
+  {
+        case 0:
+            op = ">";
+            break;
+        case 1:
+            op = "<";
+            break;
+        case 2:
+            op = ">=";
+            break;
+        case 3:
+            op = "<=";
+            break;
+        case 4:
+            op = "==";
+            break;
+        case 5:
+            op = "!=";
+            break;
+    }
+    return op;
+}
+
+std::string random_expr(int depth, int col=0)
+{
+    if (depth==0)
+    {
+        if ((rand() % 2) == 0)
+        {
+            return " int(_" + std::to_string(1 + (std::rand() % col)) + ") ";
+        }
+        else
+        {
+            return " int(" + std::to_string(std::rand() % 100) + ") ";
+        }
+    }
+    return random_expr(depth-1, col) + random_arth_op() +
+        random_expr(depth-1, col);
+}
+
+void generate_csv(std::string& out, size_t rows, size_t columns)
+{
+    std::stringstream ss;
+    for (auto i = 0U; i < rows; i++)
+    {
+        for (auto j = 0U; j < columns; j++)
+        {
+            ss << std::rand() % 1000;
+            if (j<(columns-1))
+                ss << ",";
+        }
+        ss << std::endl;
+    }
+    //std::cout << ss.str() << std::endl;
+    out = ss.str();
+}
+
 TEST(TestS3SElect, int_compare_operator)
 {
-  value a10(10), b11(11), c10(10);
+    std::srand(time(0));
+    size_t columns = 5;
+    size_t rows = 128;
+    s3select s3select_syntax;
+    std::string s3select_result;
+    std::string input;
 
-  ASSERT_EQ( a10 < b11, true );
-  ASSERT_EQ( a10 > b11, false );
-  ASSERT_EQ( a10 >= c10, true );
-  ASSERT_EQ( a10 <= c10, true );
-  ASSERT_EQ( a10 != b11, true );
-  ASSERT_EQ( a10 == b11, false );
-  ASSERT_EQ( a10 == c10, true );
+    std::string input_query = "select _1 from stdin where (" +
+        random_expr(3, columns) + ") " + random_compare_op() + " (" +
+        random_expr(1, columns) + ");";
+    //std::cout << input_query << std::endl;
+    auto status = s3select_syntax.parse_query(input_query.c_str());
+    ASSERT_EQ(status, 0);
+
+    s3selectEngine::csv_object s3_csv_object(&s3select_syntax);
+    generate_csv(input, rows, columns);
+    status = s3_csv_object.run_s3select_on_object(s3select_result,
+        input.c_str(),
+        input.size(),
+        false, // dont skip first line
+        false, // dont skip last line
+        true   // aggregate call
+        );
+    //std::cout << s3select_result << std::endl;
+    ASSERT_EQ(status, 0);
+
+    /* TODO: Verifying s3select result against result of trusted database
+     * engine. */
+    //EXPECT_EQ(s3select_result, expected_result);
 }
 
 TEST(TestS3SElect, float_compare_operator)
@@ -211,15 +316,34 @@ TEST(TestS3SElect, string_compare_operator)
 
 TEST(TestS3SElect, arithmetic_operator)
 {
-  value a(1), b(2), c(3), d(4);
+    std::srand(time(0));
+    size_t columns = 5;
+    size_t rows = 128;
+    s3select s3select_syntax;
+    std::string s3select_result;
+    std::string input;
 
-  ASSERT_EQ( (a+b).i64(), 3 );
+    std::string input_query = "select " + random_expr(3, columns) +
+        "from stdin;";
+    //std::cout << input_query << std::endl;
+    auto status = s3select_syntax.parse_query(input_query.c_str());
+    ASSERT_EQ(status, 0);
 
-  ASSERT_EQ( (value(0)-value(2)*value(4)).i64(), -8 );
-  ASSERT_EQ( (value(1.23)-value(0.1)*value(2)).dbl(), 1.03 );
+    s3selectEngine::csv_object s3_csv_object(&s3select_syntax);
+    generate_csv(input, rows, columns);
+    status = s3_csv_object.run_s3select_on_object(s3select_result,
+        input.c_str(),
+        input.size(),
+        false, // dont skip first line
+        false, // dont skip last line
+        true   // aggregate call
+        );
+    //std::cout << s3select_result << std::endl;
+    ASSERT_EQ(status, 0);
 
-  a=int64_t(1); //a+b modify a
-  ASSERT_EQ( ( (a+b) * (c+d) ).i64(), 21 );
+    /* TODO: Verifying s3select result against result of trusted database
+     * engine. */
+    //EXPECT_EQ(s3select_result, expected_result);
 }
 
 TEST(TestS3selectFunctions, timestamp)
