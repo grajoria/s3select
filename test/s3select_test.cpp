@@ -245,9 +245,14 @@ TEST(TestS3selectFunctions, utcnow)
 
 TEST(TestS3selectFunctions, add)
 {
-    const std::string input_query = "select add(-5, 0.5) from stdin;" ;
-	  auto s3select_res = run_s3select(input_query);
-    ASSERT_EQ(s3select_res, std::string("-4.5"));
+    std::srand(time(0));
+    int a = (rand() %10000000) * (-1);
+    float b = (static_cast <float> (rand() % 10000000)) / 100;
+    const std::string input_query = "select add(" + std::to_string(a) + "," +
+        std::to_string(b) + ") from stdin;";
+    float s3select_res = std::stof(run_s3select(input_query));
+    float expected_res = a + b;
+    EXPECT_EQ(s3select_res, expected_res);
 }
 
 void generate_csv(std::string& out, size_t size) {
@@ -270,11 +275,11 @@ TEST(TestS3selectFunctions, sum)
     std::string input;
     size_t size = 128;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("8128,812.80000000000007,"));
 }
@@ -290,11 +295,11 @@ TEST(TestS3selectFunctions, count)
     std::string input;
     size_t size = 128;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("128,"));
 }
@@ -310,11 +315,11 @@ TEST(TestS3selectFunctions, min)
     std::string input;
     size_t size = 128;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("0,0,"));
 }
@@ -330,48 +335,77 @@ TEST(TestS3selectFunctions, max)
     std::string input;
     size_t size = 128;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("127,12.699999999999999,"));
 }
 
 TEST(TestS3selectOperator, add)
 {
-    const std::string input_query = "select -5 + 0.5 + -0.25 from stdin;" ;
-	  auto s3select_res = run_s3select(input_query);
-    ASSERT_EQ(s3select_res, std::string("-4.75"));
+    std::srand(time(0));
+    int a = (rand() %10000000) * (-1);
+    float b = (static_cast <float> (rand() % 10000000)) / 100;
+    const std::string input_query = "select " + std::to_string(a) + " + " +
+        std::to_string(b) + " from stdin;";
+    float s3select_res = std::stof(run_s3select(input_query));
+    float expected_res = a + b;
+    EXPECT_EQ(s3select_res, expected_res);
 }
 
 TEST(TestS3selectOperator, sub)
 {
-    const std::string input_query = "select -5 - 0.5 - -0.25 from stdin;" ;
-	  auto s3select_res = run_s3select(input_query);
-    ASSERT_EQ(s3select_res, std::string("-5.25"));
+    std::srand(time(0));
+    int a = (rand() %10000000) * (-1);
+    float b = (static_cast <float> (rand() % 10000000)) / 100;
+    const std::string input_query = "select " + std::to_string(a) + " - " +
+        std::to_string(b) + " from stdin;";
+    float s3select_res = std::stof(run_s3select(input_query));
+    float expected_res = a - b;
+    EXPECT_EQ(s3select_res, expected_res);
 }
 
 TEST(TestS3selectOperator, mul)
 {
-    const std::string input_query = "select -5 * (0.5 - -0.25) from stdin;" ;
-	  auto s3select_res = run_s3select(input_query);
-    ASSERT_EQ(s3select_res, std::string("-3.75"));
+    std::srand(time(0));
+    int a = (rand() %10000000) * (-1);
+    float b = (static_cast <float> (rand() % 10000000)) / 100;
+    const std::string input_query = "select " + std::to_string(a) + " * " +
+        std::to_string(b) + " from stdin;";
+    float s3select_res = std::stof(run_s3select(input_query));
+    float expected_res = a * b;
+    EXPECT_EQ(s3select_res, expected_res);
 }
 
 TEST(TestS3selectOperator, div)
 {
-    const std::string input_query = "select -5 / (0.5 - -0.25) from stdin;" ;
-	  auto s3select_res = run_s3select(input_query);
-    ASSERT_EQ(s3select_res, std::string("-6.666666666666667"));
+    std::srand(time(0));
+    int a = (rand() %10000000) * (-1);
+    float b = (static_cast <float> (rand() % 10000000)) / 100;
+    const std::string input_query = "select " + std::to_string(a) + " / " +
+        std::to_string(b) + " from stdin;";
+    float s3select_res = std::stof(run_s3select(input_query));
+    float expected_res = a / b;
+    EXPECT_EQ(s3select_res, expected_res);
 }
 
 TEST(TestS3selectOperator, pow)
 {
-    const std::string input_query = "select 5 ^ (0.5 - -0.25) from stdin;" ;
-	  auto s3select_res = run_s3select(input_query);
-    ASSERT_EQ(s3select_res, std::string("3.34370152488211"));
+    std::srand(time(0));
+    int a = (rand() %100);
+    float b = (static_cast <float> (rand() % 10)) / 10;
+    const std::string input_query = "select " + std::to_string(a) + " ^ " +
+        std::to_string(b) + " from stdin;";
+    double s3select_res = std::stod(run_s3select(input_query));
+    //rounding expected result to 4 decimal place
+    s3select_res = (double) ((int)(s3select_res * 10000)) / 10000;
+    double expected_res = std::pow((double)a, (double)b);
+    //rounding expected result to 4 decimal place
+    expected_res = (double) ((int)(s3select_res * 10000)) / 10000;
+    EXPECT_EQ(s3select_res, expected_res);
 }
 
 TEST(TestS3selectOperator, not_operator)
@@ -393,10 +427,10 @@ TEST(TestS3SElect, from_stdin)
     size_t size = 128;
     generate_csv(input, size);
     status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
-        false, // dont skip first line 
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
 }
 
@@ -411,11 +445,11 @@ TEST(TestS3SElect, from_valid_object)
     std::string input;
     size_t size = 128;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
 }
 
@@ -440,11 +474,11 @@ TEST(TestS3selectFunctions, avg)
     std::string input;
     size_t size = 128;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("63.5,"));
 }
@@ -460,11 +494,11 @@ TEST(TestS3selectFunctions, avgzero)
     std::string input;
     size_t size = 0;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, -1);
     ASSERT_EQ(s3select_result, std::string(""));
 }
@@ -480,11 +514,11 @@ TEST(TestS3selectFunctions, floatavg)
     std::string input;
     size_t size = 128;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("63.5,"));
 }
@@ -500,11 +534,11 @@ TEST(TestS3selectFunctions, charlength)
     std::string input;
     size_t size = 1;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("5,\n"));
 }
@@ -520,11 +554,11 @@ TEST(TestS3selectFunctions, characterlength)
     std::string input;
     size_t size = 1;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("5,\n"));
 }
@@ -540,11 +574,11 @@ TEST(TestS3selectFunctions, emptystring)
     std::string input;
     size_t size = 1;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("0,\n"));
 }
@@ -560,11 +594,11 @@ TEST(TestS3selectFunctions, lower)
     std::string input;
     size_t size = 1;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("abcd12#$e,\n"));
 }
@@ -580,11 +614,11 @@ TEST(TestS3selectFunctions, upper)
     std::string input;
     size_t size = 1;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("ABCD12#$E,\n"));
   }
@@ -600,11 +634,11 @@ TEST(TestS3selectFunctions, mod)
     std::string input;
     size_t size = 1;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("1,\n"));
 }
@@ -620,11 +654,11 @@ TEST(TestS3selectFunctions, modzero)
     std::string input;
     size_t size = 1;
     generate_csv(input, size);
-    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(), 
-        false, // dont skip first line 
+    status = s3_csv_object.run_s3select_on_object(s3select_result, input.c_str(), input.size(),
+        false, // dont skip first line
         false, // dont skip last line
         true   // aggregate call
-        ); 
+        );
     ASSERT_EQ(status, 0);
     ASSERT_EQ(s3select_result, std::string("0,\n"));
   }
