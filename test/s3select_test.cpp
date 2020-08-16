@@ -1,6 +1,8 @@
 #include "s3select.h"
 #include "gtest/gtest.h"
 #include <string>
+#include <iostream>
+#include<bits/stdc++.h>
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 
@@ -594,6 +596,68 @@ TEST(TestS3selectFunctions, substr)
     const std::string input_query = "select substr(\"abCD12#$e\", 2, 6) from stdin;";
     std::string s3select_res = run_s3select(input_query);
     EXPECT_EQ(s3select_res, std::string("bCD12#"));
+}
+
+std::string random_string_expr(int depth, std::string& input_str, std::string& expr)
+{
+    /* purpose: generates expression using S3Select string functions and returns
+     * expected result for the generated expression.
+     * Input parameters:
+     * depth	- complexity level of expression
+     * input_str- operand string
+     * expr	- varible to store generated expression */
+
+    if(depth==0)
+    {
+        expr = "\"" + input_str + "\"";
+        return input_str;
+    }
+
+    std::string tmp;
+    std::string res;
+    int option = rand() % 3;
+
+    if(option == 0)
+    {
+	res = random_string_expr(depth-1, input_str, tmp);
+        expr = "lower( " + tmp + " )";
+	transform(res.begin(), res.end(), res.begin(), ::tolower);
+        return res;
+    }
+    else if(option == 1)
+    {
+	res = random_string_expr(depth-1, input_str, tmp);
+	expr = "upper( " + tmp + " )";
+	transform(res.begin(), res.end(), res.begin(), ::toupper);
+	return res;
+    }
+    else
+    {
+        if(depth == 2)
+        {
+            res = random_string_expr(depth-2, input_str, tmp);
+	    expr = "substr( " +  tmp + ", " + "charlength( \"" + input_str + "\")/4 )";
+	    return res.substr((input_str.size()/4)-1); // In C++ first charater is 0
+        }
+	else
+        {
+	    res = random_string_expr(depth-1, input_str, tmp);
+	    expr = "substr( " + tmp + ", 3 )";
+	    return res.substr(3-1); // In C++ the first character is 0 (not 1)
+        }
+	/* TODO: trim to be include after support for is it added */
+    }
+}
+
+TEST(TestS3selectFunctions, nested_string_functions)
+{
+    std::srand(time(0));
+    std::string input_str = "$$AbCdEfGhIjKlMnOpQrStUvWxYz##";
+    std::string str_expr;
+    std::string expected_res = random_string_expr(3, input_str, str_expr);
+    const std::string input_query = "select " + str_expr + " from stdin;";
+    std::string s3select_res = run_s3select(input_query);
+    EXPECT_EQ(s3select_res, expected_res);
 }
 
 TEST(TestS3selectFunctions, mod)
