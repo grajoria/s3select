@@ -589,6 +589,13 @@ TEST(TestS3selectFunctions, upper)
     ASSERT_EQ(s3select_result, std::string("ABCD12#$E,\n"));
   }
 
+TEST(TestS3selectFunctions, substr)
+{
+    const std::string input_query = "select substr(\"abCD12#$e\", 2, 6) from stdin;";
+    std::string s3select_res = run_s3select(input_query);
+    EXPECT_EQ(s3select_res, std::string("bCD12#"));
+}
+
 TEST(TestS3selectFunctions, mod)
 {
     s3select s3select_syntax;
