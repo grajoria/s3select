@@ -1,6 +1,8 @@
 #include "s3select.h"
 #include "gtest/gtest.h"
+#include <iostream>
 #include <string>
+#include <fstream>
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 
@@ -903,11 +905,29 @@ TEST(TestS3selectFunctions, nulladdition)
         ); 
     ASSERT_EQ(status, 0); 
     ASSERT_EQ(s3select_result, std::string("nan,\n"));
-} 
+}
 
+TEST(TestS3selectFunctions, nestedfunctions)
+{
+    std::fstream query_file;
+    std::fstream key_file;
 
+    query_file.open("queries.txt", std::ios::in);
+    ASSERT_EQ(query_file.is_open(), true);
+    key_file.open("queries_key.txt", std::ios::in);
+    ASSERT_EQ(key_file.is_open(), true);
 
-
-
-
-
+    if (query_file.is_open() && key_file.is_open())
+    {
+        std::string query;
+        std::string expected_res;
+        for(int i = 1; getline(query_file, query) && getline(key_file, expected_res); i++)
+        {
+            printf("Running query %d \n", i);
+	    auto s3select_res = run_s3select(query);
+	    EXPECT_EQ(s3select_res, expected_res);
+        }
+        query_file.close();
+        key_file.close();
+    }
+}

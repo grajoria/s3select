@@ -1,0 +1,3 @@
+select upper("s3select") from stdin;
+select charlength("s3select") from stdin;
+select lower("S3SELect") from stdin;
